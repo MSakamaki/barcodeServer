@@ -20,21 +20,21 @@ serverR.on('connection', function(socket){
 });
 serverC.on('connection', function(socket){
     console.log('websocket client server connect');
-    wsClient.send = function(fnc){fnc(socket);}
+    socket.on('message', function(data) {
+        console.log('client -> res msg:' + data);
+       serverR.clients.forEach(function(client){
+            if(client){
+                console.log('_ws send');
+                client.send(data);
+            }
+        });
+    });
 });
 serverM.on('connection', function(socket){
     console.log('websocket mobile server connect');
     wsMobile.send = function(fnc){fnc(socket);}
     socket.on('message', function(event){
-        /*
-            console.log('message', event);
-            var data = JSON.parse(event);
-        server.clients.forEach(function(client) {
-            if ( client ) {
-                client.send()
-            }
-        });*/
-        console.log(event);
+    console.log(event);
     });
 });
 
@@ -65,7 +65,9 @@ restServer.get('/get/:name', function(req, res, next){
         var dataX = _ws.on('message', function(event){
             console.log('message', event);
             var data = JSON.parse(event);
-            res.send(JSON.parse(event));
+            try{
+                res.send(JSON.parse(event));
+            }catch(e){ console.log('err:',e);}
         });
         /*_ws.onmessage = function(event){
             console.log('message', event);
@@ -74,7 +76,8 @@ restServer.get('/get/:name', function(req, res, next){
         //res.send({id:123});
     });
 });
-
 restServer.listen(8082, function() {
     console.log('listening at ', restServer.name, restServer.url);
 });
+
+
